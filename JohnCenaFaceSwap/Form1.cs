@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -20,9 +21,14 @@ namespace JohnCenaFaceSwap
             //Source_frame = new Image<Bgr, byte>(new Size(10, 10));
             //webCam = new Capture();
             //Application.Idle += Application_Idle;
-            Source_frame = new Image<Bgr, byte>(Application.StartupPath + "..\\..\\..\\people.png");
+            //Source_frame = new Image<Bgr, byte>(Application.StartupPath + "..\\..\\..\\people.png");
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Source_frame = new Image<Bgr, byte>(openFileDialog.FileName);     //將圖片資訊存到Source_frame
+            }
             SourceBox.Image = Source_frame.ToBitmap();
             FaceDetection();
+            //EyeDetection();
         }
 
         void Application_Idle(object sender, EventArgs e)
@@ -34,6 +40,7 @@ namespace JohnCenaFaceSwap
 
         private void FaceDetection()
         {
+            Rectangle[] eyes = EyeDetection();
             CascadeClassifier cascadeClassifier = new CascadeClassifier(Application.StartupPath + "/haarcascade_frontalface_default.xml");//路徑不知對不對
             if (Source_frame != null)
             {
@@ -41,31 +48,47 @@ namespace JohnCenaFaceSwap
                 var faces = cascadeClassifier.DetectMultiScale(grayframe, 1.1, 3, Size.Empty, Size.Empty); //the actual face detection happens here
                 foreach (var face in faces)
                 {
-                    //Source_frame.Draw(face, new Bgr(Color.Red), 3); //the detected face(s) is highlighted here using a box that is drawn around it/them
-                    //Cena.ROI = face;
-                    //CvInvoke.cvCopy(Source_frame, Cena, IntPtr.Zero);
-                    //MessageBox.Show(face.ToString());
-                    //try
-                    //{
-                    //    Cena.ROI = face;
-                    //CvInvoke.cvCopy(Source_frame, Cena, IntPtr.Zero);
-                    //MessageBox.Show("???");
-                    //}
-                    //catch
-                    //{
-                    //    MessageBox.Show("WHY???");
-                    //}
-                    //Cena.CopyTo(Source_frame);
+                    //Source_frame.Draw(face, new Bgr(Color.Red), 3);
                     PasteImageToImage(ref Source_frame, Cena, face);
+                    //refine process
+                    List<Rectangle> foundEye = new List<Rectangle>();
+                    foreach (Rectangle eye in eyes)
+                    {
+                        //Point eyeCenter = new Point((int)((double)eye.X + 0.5 * (double)eye.Width), (int)((double)eye.Y + 0.5 * (double)eye.Height));
+                        if (face.Contains(eye))
+                        {
+                            foundEye.Add(eye);
+                        }
+                    }
+                    if (foundEye.Count >= 2)
+                    {
+
+                    }
                 }
             }
             ResultBox.Image = Source_frame.ToBitmap();
         }
 
+        private Rectangle[] EyeDetection()
+        {
+            CascadeClassifier cascadeClassifier = new CascadeClassifier(Application.StartupPath + "/haarcascade_eye.xml");//路徑不知對不對
+            if (Source_frame != null)
+            {
+                var grayframe = Source_frame.Convert<Gray, byte>();
+                return cascadeClassifier.DetectMultiScale(grayframe, 1.1, 2, Size.Empty, Size.Empty); //the actual face detection happens here
+                //foreach (var eye in eyes)
+                //{
+                //    Source_frame.Draw(eye, new Bgr(Color.Blue), 2);
+                //}
+            }
+            //ResultBox.Image = Source_frame.ToBitmap();
+            return null;
+        }
+
         private void PasteImageToImage(ref Image<Bgr,byte> bigImg, Image<Bgra, byte> smallImg, Rectangle rect)
         {
             
-            const double SCALE = 1.5;  // John Scale John Scale John Scale John Scale John Scale
+            const double SCALE = 1.2;  // John Scale John Scale John Scale John Scale John Scale
             
             int heightScale = smallImg.Width / rect.Width;
             int tempImgWidth = (int)(rect.Width*SCALE);
@@ -99,6 +122,18 @@ namespace JohnCenaFaceSwap
                     }
                 }
             }
+        }
+
+        private void SourcePanel_Scroll(object sender, ScrollEventArgs e)
+        {
+            ResultPanel.VerticalScroll.Value = SourcePanel.VerticalScroll.Value;
+            ResultPanel.HorizontalScroll.Value = SourcePanel.HorizontalScroll.Value;
+        }
+
+        private void ResultPanel_Scroll(object sender, ScrollEventArgs e)
+        {
+            SourcePanel.VerticalScroll.Value = ResultPanel.VerticalScroll.Value;
+            SourcePanel.HorizontalScroll.Value = ResultPanel.HorizontalScroll.Value;
         }
     }
 }
