@@ -48,21 +48,29 @@ namespace JohnCenaFaceSwap
                 var faces = cascadeClassifier.DetectMultiScale(grayframe, 1.1, 3, Size.Empty, Size.Empty); //the actual face detection happens here
                 foreach (var face in faces)
                 {
-                    //Source_frame.Draw(face, new Bgr(Color.Red), 3);
-                    PasteImageToImage(ref Source_frame, Cena, face);
+                    Source_frame.Draw(face, new Bgr(Color.Red), 2);
+                    
                     //refine process
                     List<Rectangle> foundEye = new List<Rectangle>();
                     foreach (Rectangle eye in eyes)
                     {
-                        //Point eyeCenter = new Point((int)((double)eye.X + 0.5 * (double)eye.Width), (int)((double)eye.Y + 0.5 * (double)eye.Height));
+                        Source_frame.Draw(eye, new Bgr(Color.Blue), 2);
                         if (face.Contains(eye))
                         {
                             foundEye.Add(eye);
                         }
                     }
-                    if (foundEye.Count >= 2)
+                    if (foundEye.Count == 2)
                     {
-
+                        Point eyeOneCenter = new Point((int)((double)foundEye[0].X + 0.5 * (double)foundEye[0].Width), (int)((double)foundEye[0].Y + 0.5 * (double)foundEye[0].Height));
+                        Point eyeTwoCenter = new Point((int)((double)foundEye[1].X + 0.5 * (double)foundEye[1].Width), (int)((double)foundEye[1].Y + 0.5 * (double)foundEye[1].Height));
+                        double length = Math.Pow(Math.Pow((double)(eyeOneCenter.X - eyeTwoCenter.X), 2) + Math.Pow((double)(eyeOneCenter.Y - eyeTwoCenter.Y), 2), 0.5);
+                        double xLength = (double)(Math.Abs(eyeOneCenter.X - eyeTwoCenter.X));
+                        PasteImageToImage(ref Source_frame, Cena, face, ((Math.Asin(xLength / length) * 180) / Math.PI) - 90);
+                    }
+                    else
+                    {
+                        PasteImageToImage(ref Source_frame, Cena, face);
                     }
                 }
             }
@@ -83,6 +91,12 @@ namespace JohnCenaFaceSwap
             }
             //ResultBox.Image = Source_frame.ToBitmap();
             return null;
+        }
+
+        private void PasteImageToImage(ref Image<Bgr, byte> bigImg, Image<Bgra, byte> smallImg, Rectangle rect, double rotateAngle)
+        {
+            //smallImg.Rotate(rotateAngle, new Bgra(0, 0, 0, 0));
+            PasteImageToImage(ref bigImg, smallImg.Rotate(rotateAngle, new Bgra(0, 0, 0, 0)), rect);
         }
 
         private void PasteImageToImage(ref Image<Bgr,byte> bigImg, Image<Bgra, byte> smallImg, Rectangle rect)
