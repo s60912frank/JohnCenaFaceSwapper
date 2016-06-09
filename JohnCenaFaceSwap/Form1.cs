@@ -45,16 +45,16 @@ namespace JohnCenaFaceSwap
             if (Source_frame != null)
             {
                 var grayframe = Source_frame.Convert<Gray, byte>();
-                var faces = cascadeClassifier.DetectMultiScale(grayframe, 1.1, 3, Size.Empty, Size.Empty); //the actual face detection happens here
+                var faces = cascadeClassifier.DetectMultiScale(grayframe, 1.2, 3, Size.Empty, Size.Empty); //the actual face detection happens here
                 foreach (var face in faces)
                 {
-                    Source_frame.Draw(face, new Bgr(Color.Red), 2);
+                    //Source_frame.Draw(face, new Bgr(Color.Red), 2);
                     
                     //refine process
                     List<Rectangle> foundEye = new List<Rectangle>();
                     foreach (Rectangle eye in eyes)
                     {
-                        Source_frame.Draw(eye, new Bgr(Color.Blue), 2);
+                        //Source_frame.Draw(eye, new Bgr(Color.Blue), 2);
                         if (face.Contains(eye))
                         {
                             foundEye.Add(eye);
@@ -66,7 +66,7 @@ namespace JohnCenaFaceSwap
                         Point eyeTwoCenter = new Point((int)((double)foundEye[1].X + 0.5 * (double)foundEye[1].Width), (int)((double)foundEye[1].Y + 0.5 * (double)foundEye[1].Height));
                         double length = Math.Pow(Math.Pow((double)(eyeOneCenter.X - eyeTwoCenter.X), 2) + Math.Pow((double)(eyeOneCenter.Y - eyeTwoCenter.Y), 2), 0.5);
                         double xLength = (double)(Math.Abs(eyeOneCenter.X - eyeTwoCenter.X));
-                        PasteImageToImage(ref Source_frame, Cena, face, ((Math.Asin(xLength / length) * 180) / Math.PI) - 90);
+                        PasteImageToImage(ref Source_frame, Cena, face, ((Math.Acos(xLength / length) * 180) / Math.PI));
                     }
                     else
                     {
@@ -102,7 +102,7 @@ namespace JohnCenaFaceSwap
         private void PasteImageToImage(ref Image<Bgr,byte> bigImg, Image<Bgra, byte> smallImg, Rectangle rect)
         {
             
-            const double SCALE = 1.2;  // John Scale John Scale John Scale John Scale John Scale
+            const double SCALE = 2;  // John Scale John Scale John Scale John Scale John Scale
             
             int heightScale = smallImg.Width / rect.Width;
             int tempImgWidth = (int)(rect.Width*SCALE);
