@@ -37,11 +37,17 @@
             this.label1 = new System.Windows.Forms.Label();
             this.LoadPicture = new System.Windows.Forms.Button();
             this.OpenCamera = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.XBar = new System.Windows.Forms.TrackBar();
+            this.YBar = new System.Windows.Forms.TrackBar();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.SourceBox)).BeginInit();
             this.SourcePanel.SuspendLayout();
             this.ResultPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ResultBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ScaleBar)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.XBar)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.YBar)).BeginInit();
             this.SuspendLayout();
             // 
             // SourceBox
@@ -97,7 +103,7 @@
             this.ScaleBar.Size = new System.Drawing.Size(188, 45);
             this.ScaleBar.TabIndex = 4;
             this.ScaleBar.Value = 15;
-            this.ScaleBar.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
+            this.ScaleBar.ValueChanged += new System.EventHandler(this.FaceAdjested);
             // 
             // label1
             // 
@@ -128,11 +134,53 @@
             this.OpenCamera.UseVisualStyleBackColor = true;
             this.OpenCamera.Click += new System.EventHandler(this.OpenCamera_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(448, 477);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(43, 12);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "X-offset";
+            // 
+            // XBar
+            // 
+            this.XBar.Location = new System.Drawing.Point(497, 466);
+            this.XBar.Maximum = 20;
+            this.XBar.Minimum = -20;
+            this.XBar.Name = "XBar";
+            this.XBar.Size = new System.Drawing.Size(104, 45);
+            this.XBar.TabIndex = 9;
+            this.XBar.ValueChanged += new System.EventHandler(this.FaceAdjested);
+            // 
+            // YBar
+            // 
+            this.YBar.Location = new System.Drawing.Point(656, 465);
+            this.YBar.Maximum = 20;
+            this.YBar.Minimum = -20;
+            this.YBar.Name = "YBar";
+            this.YBar.Size = new System.Drawing.Size(104, 45);
+            this.YBar.TabIndex = 11;
+            this.YBar.ValueChanged += new System.EventHandler(this.FaceAdjested);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(607, 477);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(43, 12);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "Y-offset";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(896, 508);
+            this.Controls.Add(this.YBar);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.XBar);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.OpenCamera);
             this.Controls.Add(this.LoadPicture);
             this.Controls.Add(this.label1);
@@ -148,6 +196,8 @@
             this.ResultPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ResultBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ScaleBar)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.XBar)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.YBar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -164,6 +214,10 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button LoadPicture;
         private System.Windows.Forms.Button OpenCamera;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TrackBar XBar;
+        private System.Windows.Forms.TrackBar YBar;
+        private System.Windows.Forms.Label label3;
     }
 }
 

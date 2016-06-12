@@ -19,15 +19,31 @@ namespace JohnCenaFaceSwap
         private Rectangle[] faces;
         private Rectangle[] eyes;
         private List<double> facesAngle;
+        private Point offset = new Point(0, 0);
+        private double scale = 1.5;
+        private Size avgFaceSize = new Size(0, 0);
         public Form1()
         {
             InitializeComponent();
             Cena = new Image<Bgra, byte>(Application.StartupPath + "/cena.png");
+        }
+
+        private void LoadPicture_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Source_frame = new Image<Bgr, byte>(openFileDialog.FileName);     //將圖片資訊存到Source_frame
+            }
+            SourceBox.Image = Source_frame.ToBitmap();
+            FaceDetection();
+        }
+
+        private void OpenCamera_Click(object sender, EventArgs e)
+        {
             //Source_frame = new Image<Bgr, byte>(new Size(10, 10));
-            //webCam = new Capture();
-            //Application.Idle += Application_Idle;
-            //Source_frame = new Image<Bgr, byte>(Application.StartupPath + "..\\..\\..\\people.png");
-            //EyeDetection();
+            webCam = new Capture();
+            Application.Idle += Application_Idle;
+            Source_frame = webCam.QueryFrame().Convert<Bgr, byte>();
         }
 
         void Application_Idle(object sender, EventArgs e)
@@ -46,10 +62,12 @@ namespace JohnCenaFaceSwap
                 facesAngle = new List<double>();
                 var grayframe = Source_frame.Convert<Gray, byte>();
                 faces = cascadeClassifier.DetectMultiScale(grayframe, 1.2, 3, Size.Empty, Size.Empty); //the actual face detection happens here
+                double faceWidthSum = 0;
+                double faceHeightSum = 0;
                 foreach (var face in faces)
                 {
-                    //Source_frame.Draw(face, new Bgr(Color.Red), 2);
-                    
+                    faceWidthSum += face.Width;
+                    faceHeightSum += face.Height;
                     //refine process
                     List<Rectangle> foundEye = new List<Rectangle>();
                     foreach (Rectangle eye in eyes)
@@ -66,43 +84,43 @@ namespace JohnCenaFaceSwap
                         Point eyeTwoCenter = new Point((int)((double)foundEye[1].X + 0.5 * (double)foundEye[1].Width), (int)((double)foundEye[1].Y + 0.5 * (double)foundEye[1].Height));
                         double length = Math.Pow(Math.Pow((double)(eyeOneCenter.X - eyeTwoCenter.X), 2) + Math.Pow((double)(eyeOneCenter.Y - eyeTwoCenter.Y), 2), 0.5);
                         double xLength = (double)(Math.Abs(eyeOneCenter.X - eyeTwoCenter.X));
-                        //PasteImageToImage(ref Source_frame, Cena, face, ((Math.Acos(xLength / length) * 180) / Math.PI));
                         facesAngle.Add(-(Math.Acos(xLength / length) * 180) / Math.PI);
                     }
                     else
                     {
-                        //PasteImageToImage(ref Source_frame, Cena, face);
                         facesAngle.Add(0);
                     }
                 }
+                avgFaceSize = new Size((int)(faceWidthSum / (double)faces.Length), (int)(faceHeightSum / (double)faces.Length));
+                XBar.Maximum = avgFaceSize.Width;
+                YBar.Maximum = avgFaceSize.Height;
+                XBar.Minimum = -avgFaceSize.Width;
+                YBar.Minimum = -avgFaceSize.Height;
             }
             DrawFaces();
         }
 
         private void EyeDetection()
         {
-            CascadeClassifier cascadeClassifier = new CascadeClassifier(Application.StartupPath + "/haarcascade_eye.xml");//路徑不知對不對
+            CascadeClassifier cascadeClassifier = new CascadeClassifier(Application.StartupPath + "/haarcascade_eye.xml");
             if (Source_frame != null)
             {
                 var grayframe = Source_frame.Convert<Gray, byte>();
-                eyes = cascadeClassifier.DetectMultiScale(grayframe, 1.1, 2, Size.Empty, Size.Empty); //the actual face detection happens here
-                //foreach (var eye in eyes)
-                //{
-                //    Source_frame.Draw(eye, new Bgr(Color.Blue), 2);
-                //}
+                eyes = cascadeClassifier.DetectMultiScale(grayframe, 1.1, 2, Size.Empty, Size.Empty); //把偵測的眼睛存到全域變數
             }
-            //ResultBox.Image = Source_frame.ToBitmap();
         }
 
         private void DrawFaces()
         {
-            Result_frame = Source_frame.Clone();
-            for(int i = 0;i < faces.Length; i++)
+            if(Source_frame != null)
             {
-                PasteImageToImage(faces[i], facesAngle[i], (double)(ScaleBar.Value) / 10.0);
-                //MessageBox.Show(((double)(ScaleBar.Value) / 10.0).ToString());
+                Result_frame = Source_frame.Clone();
+                for (int i = 0; i < faces.Length; i++)
+                {
+                    PasteImageToImage(new Rectangle(faces[i].X + offset.X, faces[i].Y + offset.Y, faces[i].Width, faces[i].Height), facesAngle[i], scale);
+                }
+                ResultBox.Image = Result_frame.ToBitmap();
             }
-            ResultBox.Image = Result_frame.ToBitmap();
         }
 
         private void PasteImageToImage(Rectangle rect, double rotateAngle, double scale)
@@ -154,24 +172,12 @@ namespace JohnCenaFaceSwap
             SourcePanel.HorizontalScroll.Value = ResultPanel.HorizontalScroll.Value;
         }
 
-        private void LoadPicture_Click(object sender, EventArgs e)
+        //改變scale跟xy offset時觸發
+        private void FaceAdjested(object sender, EventArgs e)
         {
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                Source_frame = new Image<Bgr, byte>(openFileDialog.FileName);     //將圖片資訊存到Source_frame
-            }
-            SourceBox.Image = Source_frame.ToBitmap();
-            FaceDetection();
-        }
-
-        private void trackBar1_ValueChanged(object sender, EventArgs e)
-        {
+            scale = (double)ScaleBar.Value / 10.0;
+            offset = new Point(XBar.Value, YBar.Value);
             DrawFaces();
-        }
-
-        private void OpenCamera_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }
