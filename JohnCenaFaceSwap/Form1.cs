@@ -83,8 +83,15 @@ namespace JohnCenaFaceSwap
                         Point eyeOneCenter = new Point((int)((double)foundEye[0].X + 0.5 * (double)foundEye[0].Width), (int)((double)foundEye[0].Y + 0.5 * (double)foundEye[0].Height));
                         Point eyeTwoCenter = new Point((int)((double)foundEye[1].X + 0.5 * (double)foundEye[1].Width), (int)((double)foundEye[1].Y + 0.5 * (double)foundEye[1].Height));
                         double length = Math.Pow(Math.Pow((double)(eyeOneCenter.X - eyeTwoCenter.X), 2) + Math.Pow((double)(eyeOneCenter.Y - eyeTwoCenter.Y), 2), 0.5);
-                        double xLength = (double)(Math.Abs(eyeOneCenter.X - eyeTwoCenter.X));
-                        facesAngle.Add(-(Math.Acos(xLength / length) * 180) / Math.PI);
+                        double xLength = (double)Math.Abs(eyeOneCenter.X - eyeTwoCenter.X);
+                        if (eyeOneCenter.Y > eyeTwoCenter.Y)
+                        {
+                            facesAngle.Add(-(Math.Acos(xLength / length) * 180) / Math.PI);
+                        }
+                        else
+                        {
+                            facesAngle.Add((Math.Acos(xLength / length) * 180) / Math.PI);
+                        }
                     }
                     else
                     {
@@ -132,7 +139,9 @@ namespace JohnCenaFaceSwap
             int xCenter = rect.X + rect.Width / 2 - rect.Width / 15;  // John Center John Center John Center 
             int yCenter = rect.Y + rect.Height / 2 - rect.Height / 8; // John Center John Center John Center 
 
-            Image<Bgra, Byte> temp = Cena.Resize(tempImgWidth, tempImgHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR)
+            Image<Bgra, Byte> temp = Cena.Clone();
+
+            temp = temp.Resize(tempImgWidth, tempImgHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR)
                                          .Rotate(rotateAngle, new Bgra(0, 0, 0, 0));
 
             int x1 = 0;
